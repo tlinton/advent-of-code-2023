@@ -1,5 +1,4 @@
-import Data.List.Split (splitOneOf)
-import Debug.Trace (trace)
+import Data.List.Split (splitOn, splitOneOf)
 
 data Cubes = Cubes {
     red :: Int,
@@ -9,25 +8,33 @@ data Cubes = Cubes {
 
 updateCubes :: Cubes -> String -> Cubes
 updateCubes (Cubes r g b) description
-    | color == "red" = Cubes (r + value) g b
-    | color == "green" = Cubes r (g + value) b
-    | color == "blue" = Cubes r g (b + value)
+    | color == "red" = Cubes value g b
+    | color == "green" = Cubes r value b
+    | color == "blue" = Cubes r g value
     | otherwise = Cubes r g b
     where
         color = last $ words description
         value = read $ head $ words description
 
-readGame :: String -> (Int, Cubes)
+createSet :: String -> Cubes
+createSet description =
+    foldl updateCubes (Cubes 0 0 0) sets
+    where
+        sets = splitOn "," description
+
+
+readGame :: String -> (Int, [Cubes])
 readGame description =
     let
-        (game:cubes) = splitOneOf ":;," description
+        (game:sets) = splitOneOf ":;" description
         gameNr = read $ last $ words game
-        cubeElements = foldl updateCubes (Cubes 0 0 0) cubes
+        cubeElements = map createSet sets
     in
         (gameNr, cubeElements)
 
-possibleGame :: (a, Cubes) -> Bool
-possibleGame (_, cubes) = red cubes <= 12 && green cubes <= 13 && blue cubes <= 14
+possibleGame :: (a, [Cubes]) -> Bool
+possibleGame (_, cubes) = all possible cubes
+    where possible cubes = red cubes <= 12 && green cubes <= 13 && blue cubes <= 14
 
 main :: IO ()
 main = do
