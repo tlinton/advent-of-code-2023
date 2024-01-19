@@ -26,7 +26,6 @@ parse instructions = (steps, nodes)
 
 findPath :: Map.Map String Node -> Node -> [Char] -> [String]
 findPath nodeData currentNode (currentStep:steps)
-    | name currentNode == "ZZZ" = ["ZZZ"]
     | currentStep == 'L' = name currentNode : findPath nodeData (nodeData ! left currentNode) steps
     | currentStep == 'R' = name currentNode : findPath nodeData (nodeData ! right currentNode) steps
 
@@ -34,7 +33,7 @@ main :: IO ()
 main = do
     contents <- getContents
     let (steps, nodes) = parse $ lines contents
+    let path = takeWhile (/= "ZZZ") $ findPath nodes (nodes ! "AAA") $ cycle steps
     putStrLn "Path:"
-    let path = findPath nodes (nodes ! "AAA") $ cycle steps
     print path
-    putStrLn $ "The path contains " ++ show (length path - 1) ++ " steps."
+    putStrLn $ "The path contains " ++ show (length path) ++ " steps."
